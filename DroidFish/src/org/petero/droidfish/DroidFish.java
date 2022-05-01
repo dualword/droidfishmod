@@ -1,3 +1,4 @@
+/* DroidFishMod (2021) http://github.com/dualword/droidfishmod License:GNU GPL*/
 /*
     DroidFish - An Android chess program.
     Copyright (C) 2011-2014  Peter Österlund, peterosterlund2@gmail.com
@@ -19,6 +20,7 @@
 
 package org.petero.droidfish;
 
+import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileFilter;
 import java.io.FileInputStream;
@@ -261,12 +263,12 @@ public class DroidFish extends Activity
     /** State of WRITE_EXTERNAL_STORAGE permission. */
     private PermissionState storagePermission = PermissionState.UNKNOWN;
 
-    private final static String bookDir = "DroidFish/book";
-    private final static String pgnDir = "DroidFish/pgn";
-    private final static String fenDir = "DroidFish/epd";
-    private final static String engineDir = "DroidFish/uci";
-    private final static String gtbDefaultDir = "DroidFish/gtb";
-    private final static String rtbDefaultDir = "DroidFish/rtb";
+    private final static String bookDir = "DroidFishMod/book";
+    private final static String pgnDir = "DroidFishMod/pgn";
+    private final static String fenDir = "DroidFishMod/epd";
+    private final static String engineDir = "DroidFishMod/uci";
+    private final static String gtbDefaultDir = "DroidFishMod/gtb";
+    private final static String rtbDefaultDir = "DroidFishMod/rtb";
     private BookOptions bookOptions = new BookOptions();
     private PGNOptions pgnOptions = new PGNOptions();
     private EngineOptions engineOptions = new EngineOptions();
@@ -675,6 +677,35 @@ public class DroidFish extends Activity
         new File(extDir + sep + engineDir + sep + EngineUtil.openExchangeDir).mkdirs();
         new File(extDir + sep + gtbDefaultDir).mkdirs();
         new File(extDir + sep + rtbDefaultDir).mkdirs();
+
+        final File path = new File(extDir + sep + engineDir);
+        if(path.exists()) {
+            InputStream stream = null;
+            OutputStream output = null;
+
+            try {
+                for(String f : getAssets().list("uci")) {
+                    stream = this.getAssets().open("uci/" + f);
+                    output = new BufferedOutputStream(new FileOutputStream(path + File.separator + f));
+
+                    byte data[] = new byte[1024];
+                    int count;
+
+                    while((count = stream.read(data)) != -1) {
+                        output.write(data, 0, count);
+                    }
+
+                    output.flush();
+                    output.close();
+                    stream.close();
+                    stream = null;
+                    output = null;
+
+                }
+            } catch (IOException e) {
+                //
+            }
+        }
     }
 
     @Override
@@ -2491,7 +2522,7 @@ public class DroidFish extends Activity
         try { is.close(); } catch (IOException e1) {}
         wv.loadDataWithBaseURL(null, data, "text/html", "utf-8", null);
         try {
-            PackageInfo pi = getPackageManager().getPackageInfo("org.petero.droidfish", 0);
+            PackageInfo pi = getPackageManager().getPackageInfo("org.example.droidfishmod", 0);
             title += " " + pi.versionName;
         } catch (NameNotFoundException e) {
         }
@@ -2558,7 +2589,7 @@ public class DroidFish extends Activity
         final ArrayList<String> items = new ArrayList<String>();
         final ArrayList<String> ids = new ArrayList<String>();
         ids.add("stockfish"); items.add(getString(R.string.stockfish_engine));
-        ids.add("cuckoochess"); items.add(getString(R.string.cuckoochess_engine));
+        //ids.add("cuckoochess"); items.add(getString(R.string.cuckoochess_engine));
 
         if (storageAvailable()) {
             final String sep = File.separator;
@@ -3330,7 +3361,7 @@ public class DroidFish extends Activity
             lst.add(getString(R.string.set_engine_options));
             actions.add(SET_ENGINE_OPTIONS);
         }
-        lst.add(getString(R.string.configure_network_engine)); actions.add(CONFIG_NET_ENGINE);
+        //lst.add(getString(R.string.configure_network_engine)); actions.add(CONFIG_NET_ENGINE);
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder.setTitle(R.string.option_manage_engines);
         builder.setItems(lst.toArray(new CharSequence[lst.size()]), new DialogInterface.OnClickListener() {
